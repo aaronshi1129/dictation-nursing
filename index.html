@@ -1,0 +1,412 @@
+<html><head><base href=".">
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    background: white;
+    padding: 20px;
+  }
+
+  .container {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    max-width: 800px;
+    width: 90%;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    text-align: center;
+  }
+
+  .sentence {
+    font-size: 1.2rem;
+    margin: 20px 0;
+    line-height: 1.6;
+    color: #2c3e50;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.2s, background 0.2s;
+    margin: 5px;
+  }
+
+  button:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+  }
+
+  .button-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .input-area {
+    margin: 20px 0;
+    width: 100%;
+  }
+
+  #userInput {
+    width: 90%;
+    padding: 12px;
+    font-size: 1rem;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    margin: 10px 0;
+  }
+
+  .feedback {
+    font-size: 1.1rem;
+    margin: 15px 0;
+    font-weight: bold;
+    min-height: 24px;
+  }
+
+  .correct {
+    color: #27ae60;
+  }
+
+  .incorrect {
+    color: #e74c3c;
+  }
+
+  .disclaimer {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    margin-top: 20px;
+    font-style: italic;
+  }
+
+  .score-display {
+    font-size: 1.1rem;
+    color: #34495e;
+    margin: 10px 0;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+  }
+
+  #correctScore {
+    color: #27ae60;
+    font-weight: bold;
+  }
+
+  #percentageScore {
+    color: #2980b9;
+    font-weight: bold;
+  }
+
+  .answer-display {
+    font-size: 1.1rem;
+    margin: 15px 0;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    color: #2c3e50;
+    display: none;
+  }
+
+  .answer-display.show {
+    display: block;
+  }
+
+  .pokemon-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  .pokemon-modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    animation: modalPop 0.3s ease-out;
+  }
+
+  @keyframes modalPop {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .pokemon-image {
+    margin: 20px 0;
+    max-width: 200px;
+    height: auto;
+    animation: bounce 1s ease infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .continue-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.2s, background 0.2s;
+    margin-top: 20px;
+  }
+
+  .continue-btn:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Listening Dictation (Nursing)</h1>
+    <p class="subtitle">Finish 5 tasks correctly and earn a Pokemon!</p>
+  <div class="score-display">
+    Score: <span id="correctScore">0</span> correct / <span id="totalAttempts">0</span> attempts 
+    (<span id="percentageScore">0</span>%)
+  </div>
+  <div class="button-group">
+    <button onclick="speakSentence()">
+      <span>🔊 Read Aloud</span>
+    </button>
+  </div>
+  <div class="input-area">
+    <input type="text" 
+           id="userInput" 
+           placeholder="Type what you hear..."
+           onkeypress="if(event.key === 'Enter') checkAnswer()">
+  </div>
+  <div id="feedback" class="feedback"></div>
+  <div id="answerDisplay" class="answer-display"></div>
+  <div class="button-group">
+    <button onclick="generateSentence()">Get New Sentence</button>
+    <button onclick="checkAnswer()">Check Answer</button>
+    <button onclick="showAnswer()">Show Answer</button>
+  </div>
+  <p class="disclaimer">
+    The sentences are used to practice English listening and writing.
+  </p>
+  <p class="disclaimer" style="margin-bottom: 0; font-style: normal;">
+    Author: Aaron Shi. Released in 2025.
+  </p>
+</div>
+
+<script>
+const POKEMON_COUNT = 151; // Number of original Pokemon
+let fiveCorrectCounter = 0; // Track progress towards 5 correct answers
+const templates = [
+  "How are you feeling today? Any discomfort or pain?",
+  "I need to take your blood pressure now. Please relax.",
+  "Could you please confirm your name and date of birth?",
+  "I'll be administering your medication shortly. Do you have any allergies?",
+  "Please let me know if you experience any side effects from the medication.",
+  "We need to check your temperature, just to make sure everything is fine.",
+  "It's important that you get plenty of rest and drink fluids.",
+  "I'll help you sit up slowly, so take your time.",
+  "Let me know if you feel dizzy or lightheaded.",
+  "We’re going to do some routine tests to monitor your condition.",
+  "Do you need help with anything, like getting a glass of water?",
+  "I will be here to monitor you throughout your recovery process.",
+  "Please avoid any strenuous activity for the next few days.",
+  "If you feel any pain, let me know immediately so I can assist you.",
+  "I’ll be checking your vitals every few hours.",
+  "You’ll need to follow up with your doctor in a week for a check-up.",
+  "Have you been feeling nauseous or had any issues with eating?",
+  "It’s important to keep your wound clean to avoid infection.",
+  "Please let me know if you're experiencing any discomfort during the procedure.",
+  "I'll help you with your breathing exercises to ensure you’re comfortable.",
+  "Don’t hesitate to call me if you need anything during your recovery.",
+  "You can expect a slight soreness, but it should improve soon.",
+  "It's crucial that you take your medication as prescribed to avoid complications.",
+  "I'll be back shortly to check on you again. Rest easy.",
+  "Please make sure to report any changes in your condition.",
+  "You can lie down now, and I’ll adjust your position to ensure you’re comfortable.",
+  "The doctor will be in shortly to discuss your results.",
+  "I need to check your bandages and change them if necessary.",
+  "I’ll assist you in getting dressed after your examination.",
+  "You should avoid hot showers until your stitches are removed.",
+  "Let me know if you feel unwell at any point during your stay.",
+  "I’m here to help with any concerns you may have about your recovery.",
+  "I’m going to listen to your lungs now, so take a deep breath for me.",
+  "Your blood work looks good, but we’ll need to monitor it closely.",
+  "I’ll be taking your temperature every hour to ensure there are no complications.",
+  "Make sure to take your prescribed pain relievers on time to manage your symptoms.",
+  "You may feel some discomfort when I adjust your IV line, but it should pass quickly.",
+  "It's normal to feel a little tired after the procedure, so rest as much as you can.",
+  "I’ll be monitoring your pulse and oxygen levels throughout your recovery.",
+  "Are you comfortable? If you need anything, just call.",
+  "You should avoid lifting anything heavy for the next few days to prevent strain.",
+  "I’m going to prepare your room for your discharge tomorrow.",
+  "Please let me know if you experience any shortness of breath or chest pain.",
+  "I’ll explain the discharge instructions to you before you leave.",
+  "If you notice any swelling or redness around your incision, please let me know.",
+  "You can take your medication with food if it upsets your stomach.",
+  "It's essential to keep track of your symptoms so we can make any necessary adjustments.",
+  "You may experience some dizziness when standing up, so move slowly.",
+  "Please don’t hesitate to ask if you need help with your physical therapy exercises.",
+  "We’ll check your blood sugar levels regularly while you’re here.",
+  "I’m going to take a sample for a test to help diagnose your condition.",
+  "Remember to follow up with your specialist in a month for your routine check-up.",
+  "Please call us if you experience any severe discomfort or changes in your condition after leaving.",
+  "I'll assist you in getting settled in bed before your evening medication.",
+  "You might experience some side effects from the medication, but they should be temporary.",
+  "The nurse practitioner will visit you soon to discuss your care plan.",
+  "You’ll need to monitor your blood pressure at home and report any significant changes.",
+  "I’ll be helping you with your exercises to regain strength after surgery.",
+  "If you feel uncomfortable during the treatment, please let me know immediately."
+];
+
+let correctAnswers = 0;
+let totalAttempts = 0;
+let currentSentence = '';
+
+function generateSentence() {
+  currentSentence = templates[Math.floor(Math.random() * templates.length)];
+  
+  // Clear the input and feedback
+  document.getElementById("userInput").value = "";
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("feedback").className = "feedback";
+  document.getElementById("answerDisplay").classList.remove("show");
+  
+  // Automatically speak the new sentence
+  speakSentence();
+}
+
+function speakSentence() {
+  if (!currentSentence) {
+    currentSentence = document.getElementById("sentenceDisplay").textContent;
+  }
+  
+  window.speechSynthesis.cancel();
+  
+  const utterance = new SpeechSynthesisUtterance(currentSentence);
+  
+  utterance.rate = 0.9;
+  utterance.pitch = 1;
+  utterance.volume = 1;
+  
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length > 0) {
+    const englishVoice = voices.find(voice => voice.lang.startsWith('en-'));
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+    }
+  }
+  
+  window.speechSynthesis.speak(utterance);
+}
+
+function checkAnswer() {
+  const userInput = document.getElementById("userInput").value.trim().toLowerCase();
+  const correctAnswer = currentSentence.toLowerCase();
+  const feedbackElement = document.getElementById("feedback");
+  
+  totalAttempts++;
+  
+  if (userInput === correctAnswer) {
+    correctAnswers++;
+    fiveCorrectCounter++;
+    feedbackElement.textContent = "🎉 Excellent! That's correct!";
+    feedbackElement.className = "feedback correct";
+    
+    if (fiveCorrectCounter === 5) {
+      const randomPokemonId = Math.floor(Math.random() * POKEMON_COUNT) + 1;
+      showPokemonReward(randomPokemonId);
+      fiveCorrectCounter = 0;
+    }
+  } else {
+    feedbackElement.textContent = "Keep trying! Listen again and type what you hear.";
+    feedbackElement.className = "feedback incorrect";
+  }
+  
+  document.getElementById("correctScore").textContent = correctAnswers;
+  document.getElementById("totalAttempts").textContent = totalAttempts;
+  document.getElementById("percentageScore").textContent = 
+    Math.round((correctAnswers / totalAttempts) * 100);
+}
+
+function showAnswer() {
+  const answerDisplay = document.getElementById("answerDisplay");
+  answerDisplay.textContent = currentSentence;
+  answerDisplay.classList.add("show");
+  
+  setTimeout(() => {
+    answerDisplay.classList.remove("show");
+  }, 5000);
+}
+
+function showPokemonReward(pokemonId) {
+  const modal = document.createElement('div');
+  modal.className = 'pokemon-modal';
+  modal.innerHTML = `
+    <div class="pokemon-modal-content">
+      <h2>Congratulations! 🎉</h2>
+      <p>You've successfully finished five listening dictation tasks. You've won this Pokemon!</p>
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png" 
+           alt="Pokemon reward" 
+           class="pokemon-image"
+           width="200" 
+           height="200">
+      <button onclick="closePokemonModal()" class="continue-btn">Continue Practicing</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function closePokemonModal() {
+  const modal = document.querySelector('.pokemon-modal');
+  if (modal) {
+    modal.remove();
+    generateSentence();
+  }
+}
+
+speechSynthesis.onvoiceschanged = function() {
+  window.speechSynthesis.getVoices();
+};
+
+window.onload = generateSentence;
+</script>
+</body></html>
